@@ -20,7 +20,7 @@ A fully normalized MySQL 8.0 database (3NF) managing console subscriptions, game
 
 ## How to Run
 1. Ensure you have MySQL Server (8.0+) and a client like MySQL Workbench installed.
-2. Clone this repository or download `schema_and_queries.sql`.
+2. Clone this repository or download `Schema_Queries.sql`.
 3. Open the file in your MySQL client and execute the entire script. 
 4. The script will automatically drop/recreate the `ConsoleGamingSubscriptions` database, build the tables in foreign-key-safe order, insert sample data, and output the analytical query results.
 
