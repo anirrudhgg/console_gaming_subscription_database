@@ -11,8 +11,8 @@ A fully normalized MySQL 8.0 database (3NF) managing console subscriptions, game
 * **Performance & Scale:** Designed with considerations for ACID compliance, row-level locking, and the CAP theorem.
 
 ## Repository Contents
-* `schema_and_queries.sql`: The complete MySQL script including table creation, constraint definitions, realistic sample data insertion, and 10 advanced analytical queries.
-* `Database_Design_Report.pdf`: Comprehensive documentation covering requirements analysis, Entity-Relationship (Crow's Foot) diagrams, functional dependencies, normalization proofs, and database performance evaluations.
+* `Schema_Queries.sql`: The complete MySQL script including table creation, constraint definitions, realistic sample data insertion, and 10 advanced analytical queries.
+* `Databases_Project_Report.pdf`: Comprehensive documentation covering requirements analysis, Entity-Relationship (Crow's Foot) diagrams, functional dependencies, normalization proofs, and database performance evaluations.
 
 ## Technologies Used
 * MySQL 8.0
