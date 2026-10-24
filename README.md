@@ -27,4 +27,6 @@ A fully normalized MySQL 8.0 database (3NF) managing console subscriptions, game
 ## Entity-Relationship Diagram
 <img width="691" height="467" alt="image" src="https://github.com/user-attachments/assets/fe0de80b-ba3e-4a60-89a3-9adb907f00de" />
 
+
+
 *Developed as the final project for the Relational DBMS course at SRH University.*
