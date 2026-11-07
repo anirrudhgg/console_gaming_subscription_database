@@ -271,6 +271,12 @@ UNION ALL SELECT 'Transaction', COUNT(*) FROM Transaction
 UNION ALL SELECT 'SupportAgent', COUNT(*) FROM SupportAgent
 UNION ALL SELECT 'SupportTicket', COUNT(*) FROM SupportTicket;
 
+-- ============================================================
+-- Part B: Analytical queries, view, stored procedure and trigger
+-- ============================================================
+
+-- Q1. Revenue per subscription tier (JOIN + GROUP BY)
+
 SELECT
     st.TierName,
     SUM(t.Amount) AS TotalRevenue
@@ -281,6 +287,7 @@ WHERE t.Amount > 0
 GROUP BY st.TierName
 ORDER BY TotalRevenue DESC;
 
+-- Q2. Most-owned games, ranked within each genre (CTE + window function)
 WITH GameOwnership AS (
     SELECT
         g.Genre,
@@ -297,6 +304,8 @@ SELECT
     RANK() OVER (PARTITION BY Genre ORDER BY TotalOwners DESC) AS OwnershipRank
 FROM GameOwnership;
 
+-- Q3. Accounts that spent more than the average transaction and also bought
+--     something in January 2024 (correlated subqueries)
 SELECT
     a.AccountName,
     (SELECT SUM(t2.Amount) FROM Transaction t2 WHERE t2.AccountID = a.AccountID) AS TotalSpend
@@ -308,8 +317,9 @@ WHERE (SELECT SUM(t2.Amount) FROM Transaction t2 WHERE t2.AccountID = a.AccountI
         FROM Transaction t
         WHERE t.Date BETWEEN '2024-01-01' AND '2024-01-31'
   );
-  
-  SELECT
+
+-- Q4. Billing status per account (LEFT JOIN + CASE)
+SELECT
     a.AccountName,
     COALESCE(SUM(t.Amount), 0) AS TotalBilled,
     MAX(t.Date) AS LastBillingDate,
@@ -322,6 +332,7 @@ FROM Account a
 LEFT JOIN Transaction t ON a.AccountID = t.AccountID
 GROUP BY a.AccountName;
 
+-- Q5. Publishers with more than one game and their price range (HAVING)
 SELECT
     p.PublisherName,
     COUNT(g.GameID) AS GamesPublished,
@@ -332,6 +343,7 @@ INNER JOIN Game g ON p.PublisherID = g.PublisherID
 GROUP BY p.PublisherName
 HAVING COUNT(g.GameID) > 1;
 
+-- Q6. Tickets that are open or handled by an agent on the company e-mail domain (LIKE)
 SELECT
     st.TicketID,
     st.Issue,
@@ -342,7 +354,8 @@ FROM SupportTicket st
 INNER JOIN SupportAgent sa ON st.AgentID = sa.AgentID
 WHERE st.Status LIKE '%Open%'
    OR sa.Email LIKE '%@company.de';
-   
+
+-- Q7. View: lifetime spend per account and tier
 CREATE VIEW vw_ActiveAccountSummary AS
 SELECT
     a.AccountID,
@@ -354,9 +367,9 @@ INNER JOIN SubscriptionTier st ON a.SubscriptionTierID = st.TierID
 LEFT JOIN Transaction t ON a.AccountID = t.AccountID
 GROUP BY a.AccountID, a.AccountName, st.TierName;
  
--- Run this separately right after creating the view, to see it work:
 SELECT * FROM vw_ActiveAccountSummary;
 
+-- Q8. Stored procedure: games owned by one account
 DELIMITER //
 CREATE PROCEDURE GetAccountOwnershipSummary (IN inputAccountID INT)
 BEGIN
@@ -373,9 +386,11 @@ BEGIN
 END //
 DELIMITER ;
  
--- Run this separately right after creating the procedure, to see it work:
 CALL GetAccountOwnershipSummary(1);
 
+-- Q9. Trigger: blocks a second licence for the same game on the same account
+--     with a clear error message. (The composite primary key on Account_Games
+--     would also reject it, but only with a generic duplicate-key error.)
 
 DELIMITER //
 CREATE TRIGGER trg_PreventDuplicateGamePurchase
@@ -392,10 +407,7 @@ BEGIN
 END //
 DELIMITER ;
  
--- Run this separately to PROVE the trigger works: Account 1 already owns
--- GameID 1 (see Account_Games sample data) -- this insert should FAIL
-INSERT INTO Account_Games (AccountID, GameID, PurchaseDate) VALUES (1, 1, CURDATE());
-
+-- Q10. Running total of billing per account over time (window function)
 SELECT
     t.TransactionID,
     a.AccountName,
@@ -407,3 +419,11 @@ SELECT
     ) AS RunningTotalBilled
 FROM Transaction t
 INNER JOIN Account a ON t.AccountID = a.AccountID;
+
+-- ============================================================
+-- Trigger test (run on its own, after the script above)
+-- Account 1 already owns game 1, so this INSERT is expected to FAIL with:
+--   "Account already owns a license for this game"
+-- It is commented out so that running the whole file does not stop here.
+-- ============================================================
+-- INSERT INTO Account_Games (AccountID, GameID, PurchaseDate) VALUES (1, 1, CURDATE());
